@@ -1,6 +1,7 @@
 # Blog_Web_Application
 
 Author: Bryson MacDuff
+
 Contact: brysonmacduff@gmail.com
 
 Overview:
