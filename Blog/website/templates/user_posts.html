@@ -1,0 +1,134 @@
+
+<html>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+        integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We"
+        crossorigin="anonymous"/>
+  <script src="https://kit.fontawesome.com/82d35f2502.js" crossorigin="anonymous"></script>
+  <title>Blog</title>
+
+  <body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container-fluid">
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbar"><span class="navbar-toggler-icon"></span></button>
+      </div>
+      <div class="collapse navbar-collapse" id="navbar">
+        <div class="navbar-nav">
+          <a class="nav-item nav-link">{{user.username}}</a>
+          <a class="nav-item nav-link" href="/home">Home</a>
+          <a class="nav-item nav-link" href="/create-post">Post</a>
+          <a class="nav-item nav-link" href="/logout">Logout</a>
+        </div>
+      </div>
+    </nav>
+
+    {% with messages = get_flashed_messages(with_categories=True) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          {% if category == "error" %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+              {{message}}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% else %}
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+              {{message}}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <h1 align="center">Posts by {{author.username}}</h1>
+    <div id="posts">
+      {% for post in posts %}
+        <div class="card border-dark">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <a href="/posts/{{post.user.username}}">{{post.user.username}}</a>
+            <div>
+              <span id="likes-count-{{post.id}}">{{post.likes|length}}</span>
+
+              {% if user.id in post.likes|map(attribute="author")|list %}
+              <i class="fas fa-thumbs-up" id="like-button-{{post.id}}" onclick="like({{post.id}})"></i>
+              {% else %}
+              <i class="far fa-thumbs-up" id="like-button-{{post.id}}" onclick="like({{post.id}})"></i>
+              {% endif %}
+
+              {% if user.id == post.author %}
+              <div class="btn-group">
+                <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown"></button>
+                <ul class="dropdown-menu">
+                  <li><a href="/delete-post/{{post.id}}" class="dropdown-item">Delete</a></li>
+                </ul>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="card-text">{{post.text}}</div>
+
+            <br/>
+            <div class="collapse" id="comments-{{post.id}}">
+              <div class="card">
+                <div class="card-body" id="comments-expanded-{{post.id}}">
+                  {% for comment in post.comments %}
+                    <div class="d-flex justify-content-between align-items-center">
+                      <div>
+                        <a href="/posts/{{comment.user.username}}">{{comment.user.username}}</a>: {{comment.text}}
+                      </div>
+                      <div>
+                        <small class="text-muted">{{comment.date_created}}</small>
+                        {% if user.id == comment.author %}
+                          <div class="btn-group">
+                            <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown"></button>
+                            <ul class="dropdown-menu">
+                              <li><a href="/delete-comment/{{comment.id}}" class="dropdown-item">Delete</a></li>
+                            </ul>
+                          </div>
+                        {% endif %}
+                        <br></br>
+                      </div>
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+            <p class="card-text">
+              {% if post.comments|length > 0 %}
+                <a data-bs-toggle="collapse" href="#comments-{{post.id}}" role="button">
+                  <small>View {{post.comments|length}} Comments</small>
+                </a>
+              {% else %}
+                <small class="text-muted">No Comments</small>
+              {% endif %}
+            </p>
+            <!-- the action="create-comment" routes the url to localhost:port/create-comment -->
+            <form class="input-group mb-3" method="POST" action="create-comment/{{post.id}}">
+              <input type="text" id="text" name="text" class="form-control" placeholder="Make a comment..."/>
+              <button type="submit" class="btn btn-primary">Comment</button>
+            </form>
+          </div>
+          <div class="card-footer text-muted">{{post.date_created}}</div>
+        </div>
+        <br></br>
+      {% endfor %}
+
+      <div align="center">
+        <a href="/create-post"><button type="button" class="btn btn-primary btn-lg">Create Post</button></a>
+      </div>
+      <br></br>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj"
+            crossorigin="anonymous"></script>
+    <script type="text/javascript" src="{{url_for('static',filename='index.js')}}"></script>
+  </body>
+
+</html>
